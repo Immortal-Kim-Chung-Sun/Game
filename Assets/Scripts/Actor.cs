@@ -45,7 +45,7 @@ public abstract class Actor : MonoBehaviour
 		Attack();
 	}
 
-	protected virtual IEnumerator KnockBack()
+	private IEnumerator KnockBack()
 	{
 		hit = true;
 
