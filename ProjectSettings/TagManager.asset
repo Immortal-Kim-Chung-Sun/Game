@@ -6,6 +6,7 @@ TagManager:
   tags:
   - Ground
   - Bullet
+  - Thorn
   layers:
   - Default
   - TransparentFX

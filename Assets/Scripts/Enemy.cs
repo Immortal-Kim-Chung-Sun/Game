@@ -1,15 +1,11 @@
 using UnityEngine;
 
-public class Enemy : Actor
+public abstract class Enemy : Actor
 {
-	public bool BeAttacked
-	{
-		get { return beAttacked; }
-		set { beAttacked = value; }
-	}
+	[SerializeField] private int score;
 
-	[SerializeField]
-	protected AudioClip[] _audioClip;
+	[Header("Cashing")]
+	[SerializeField] protected EnemySound enemySound;
 
 	protected bool canAttack = false;
 
@@ -20,15 +16,20 @@ public class Enemy : Actor
 		base.Awake();
 
 		playerTransform = FindObjectOfType<Player>().transform;
-
-		
 	}
 
 	private void OnDestroy()
 	{
-		if (FindObjectOfType<Player>() != null)
+		if (playerTransform != null)
 		{
-			Score.score += (enemyNumber + 1) * 1000;
+			Score.score += score;
 		}
+	}
+
+	protected override void DeathSound()
+	{
+		audioSource.clip = enemySound.death;
+		audioSource.time = 0.5f;
+		audioSource.Play();
 	}
 }

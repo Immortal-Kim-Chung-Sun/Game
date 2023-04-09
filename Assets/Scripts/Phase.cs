@@ -5,47 +5,37 @@ using UnityEngine.SceneManagement;
 
 public class Phase : MonoBehaviour
 {
-	public static int phase = 0;
+	public static int count = 0;
 
-	[SerializeField]
-	private Camera _camera;
-
-	[SerializeField]
-	private Transform playerTransform;
-
-	[SerializeField]
-	private BoxCollider2D wallCollider;
-
-	[SerializeField]
-	private Transform enemySpawner;
-
+	[Header("Cashing")]
+	[SerializeField] private BoxCollider2D wallCollider;
+	[SerializeField] private Transform enemySpawner;
 	public UnityEvent fazeIsEnd = new UnityEvent();
-
-	[SerializeField]
-	private TextMeshProUGUI textMesh;
+	[SerializeField] private TextMeshProUGUI phaseText;
 
 	public bool slaneEnemy = true;
+	
+	private Transform playerTransform;
 
 	private void Awake()
 	{
-		phase = 0;
+		count = 0;
+
+		playerTransform = FindObjectOfType<Player>().transform;
 	}
 
 	private void Update()
 	{
-		if (slaneEnemy) return;
-
-		textMesh.text = "페이즈 : " + (phase + 1);
+		phaseText.text = "페이즈 : " + (count + 1);
 	}
 
 
 	public void StageEnd()
 	{
 		wallCollider.isTrigger = true;
-		slaneEnemy = true;
-		_camera.transform.parent = playerTransform;
-		phase++;
-		if (phase >= 5)
+		Camera.main.transform.parent = playerTransform;
+		
+		if (count + 1 >= 5)
 		{
 			EndGame();
 		}
@@ -53,11 +43,12 @@ public class Phase : MonoBehaviour
 
 	public void NextStage()
 	{
+		count++;
+
 		wallCollider.isTrigger = false;
-		slaneEnemy = false;
-		_camera.transform.parent = null;
-		_camera.transform.position = new Vector3(phase * 18.1f, 0, -10);
-		if (phase is 1)
+		Camera.main.transform.parent = null;
+		Camera.main.transform.position = new Vector3(count * 18.1f, 0, -10);
+		if (count == 1)
 		{
 			wallCollider.transform.parent.position = new Vector3(17, 0);
 		}

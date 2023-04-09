@@ -1,23 +1,22 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class Bullet : MonoBehaviour
 {
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
+	[Header("Value")]
+	[SerializeField] private float speed = 5;
+	public int damage;
 
-    // Update is called once per frame
-    void Update()
-    {
-		transform.Translate(Vector3.right * Time.deltaTime * 5, Space.Self);
-    }
+	private void Update()
+	{
+		transform.Translate(speed * Time.deltaTime * Vector3.right, Space.Self);
+	}
 
 	private void OnBecameInvisible()
 	{
-		Destroy(gameObject);
+		Vector3 path = Camera.main.WorldToScreenPoint(transform.position);
+		if (path.x < 0 || path.x > Screen.width || path.y < 0 || path.y > Screen.height)
+		{
+			Destroy(gameObject);
+		}
 	}
 }

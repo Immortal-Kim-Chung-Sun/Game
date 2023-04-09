@@ -2,108 +2,86 @@ using System.Collections;
 using UnityEngine;
 
 [RequireComponent(typeof(SpriteRenderer), typeof(Rigidbody2D))]
-public class Actor : MonoBehaviour
+public abstract class Actor : MonoBehaviour
 {
-	public int hp;
+	[Header("Value")]
+	[SerializeField] protected int hp;
+	[SerializeField] protected int damage;
+	[SerializeField] protected float speed;
+	[SerializeField] protected float attackRange;
+	[SerializeField] protected float attackDelay;
+	[SerializeField] protected float knockBackRange;
+
+	protected bool hit = false;
+
+	protected float countAttackDelay = 0f;
 
 	protected Animator animator;
-
-	[SerializeField]
-	protected float attackRange;
-
-	[SerializeField]
-	protected int enemyNumber;
-
-	protected bool beAttacked = false;
-
-	protected bool isHit = false;
-
-	private float countDelay = 0f;
-
-	[SerializeField]
-	protected float attackDelay, knockBackRange;
-
 	protected SpriteRenderer spriteRenderer;
+	protected Rigidbody2D rigidbody2d;
+	protected AudioSource audioSource;
 
-	protected Rigidbody2D _rigidbody2D;
+	private Coroutine knockBackCoroutine = null;
 
 	protected virtual void Awake()
 	{
 		spriteRenderer = GetComponent<SpriteRenderer>();
-		_rigidbody2D = GetComponent<Rigidbody2D>();
+		rigidbody2d = GetComponent<Rigidbody2D>();
 		animator = GetComponent<Animator>();
-
-		switch (enemyNumber)
-		{
-			case 0:
-				hp = 3;
-				break;
-			case 1:
-				hp = 5;
-				break;
-			case 2:
-				hp = 30;
-				break;
-			default:
-				break;
-		}
+		audioSource = GameObject.Find("AudioSource").GetComponent<AudioSource>();
 	}
 
 	protected virtual void Update()
 	{
-		if (beAttacked)
+		if (hit) return;
+
+		if (countAttackDelay > 0)
 		{
-			StartCoroutine(KnockBack());
-			beAttacked = false;
+			countAttackDelay -= Time.deltaTime;
 		}
-
-		if (isHit) return;
-
-		countDelay += Time.deltaTime;
 
 		Move();
 
-		if (countDelay >= attackDelay)
-		{
-			Attack();
-		}
+		Attack();
 	}
 
 	protected virtual IEnumerator KnockBack()
 	{
-		isHit = true;
+		hit = true;
 
 		animator.SetBool("KnockBack", true);
 
-		_rigidbody2D.AddForce(new Vector2(spriteRenderer.flipX ? -knockBackRange : knockBackRange, 0), ForceMode2D.Impulse);
+		rigidbody2d.AddForce(new Vector2(spriteRenderer.flipX ? -knockBackRange : knockBackRange, 0), ForceMode2D.Impulse);
 
 		yield return new WaitForSeconds(0.2f);
+
 		animator.SetBool("KnockBack", false);
 
-		hp--;
+		hit = false;
 
-		if (hp is 0)
+		knockBackCoroutine = null;
+	}
+
+	protected abstract void DeathSound();
+
+	protected abstract void Move();
+
+	public void BeShot(int damage)
+	{
+		if (knockBackCoroutine != null)
+		{
+			StopCoroutine(knockBackCoroutine);
+		}
+		knockBackCoroutine = StartCoroutine(KnockBack());
+
+		hp -= damage;
+
+		if (hp <= 0)
 		{
 			DeathSound();
 			Destroy(gameObject);
 		}
-
-
-		isHit = false;
 	}
 
-	protected virtual void DeathSound()
-	{
-
-	}
-
-	protected virtual void Move()
-	{
-
-	}
-
-	protected virtual void Attack()
-	{
-		countDelay = 0f;
-	}
+	protected abstract void Attack();
 }

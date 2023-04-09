@@ -1,4 +1,3 @@
-using System.Collections;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -6,40 +5,26 @@ using UnityEngine.UI;
 
 public class Player : Actor
 {
-	public bool BeAttacked
-	{
-		get { return beAttacked; }
-		set { beAttacked = value; }
-	}
-
-	[SerializeField]
-	private AudioClip attackSound;
-
-	[SerializeField]
-	private Image hpBar;
-
-	[SerializeField]
-	private TextMeshProUGUI textMeshProUGUI;
-
-	[SerializeField]
-	private Combo combo;
-
-	[SerializeField]
-	private float jumpRange;
-
+	[SerializeField] private float jumpRange;
 	public bool canJump = false;
 
-	private AudioSource _audio;
+	[Header("Cashing")]
+	[SerializeField] private AudioClip attackSound;
+	[SerializeField] private Image hpBar;
+	[SerializeField] private TextMeshProUGUI hpText;
+	[SerializeField] private Combo combo;
+
+	private int maxHP;
 
 	protected override void Awake()
 	{
 		base.Awake();
 
-		hp = 300;
+		maxHP = hp;
 
 		animator = GetComponent<Animator>();
 
-		_audio = GameObject.Find("Main Camera").GetComponent<AudioSource>();
+		audioSource = GameObject.Find("AudioSource").GetComponent<AudioSource>();
 	}
 
 	protected override void Update()
@@ -50,9 +35,9 @@ public class Player : Actor
 
 		Jump();
 
-		hpBar.fillAmount = hp / 300f;
+		hpBar.fillAmount = hp / (float)maxHP;
 
-		textMeshProUGUI.text = hp + "/300";
+		hpText.text = hp + "/" + maxHP;
 	}
 
 	protected override void Move()
@@ -60,14 +45,14 @@ public class Player : Actor
 		if (Input.GetKey(KeyCode.LeftArrow))
 		{
 			spriteRenderer.flipX = true;
-			transform.Translate(Vector2.left * Time.deltaTime * 5);
+			transform.Translate(speed * Time.deltaTime * Vector2.left);
 
 			animator.SetBool("Walk", true);
 		}
 		if (Input.GetKey(KeyCode.RightArrow))
 		{
 			spriteRenderer.flipX = false;
-			transform.Translate(Vector2.right * Time.deltaTime * 5);
+			transform.Translate(speed * Time.deltaTime * Vector2.right);
 
 			animator.SetBool("Walk", true);
 		}
@@ -75,52 +60,42 @@ public class Player : Actor
 
 	private void Jump()
 	{
-		if (!Input.GetKeyDown(KeyCode.UpArrow)) return;
-
 		if (!canJump) return;
 
-		_rigidbody2D.AddForce(new Vector2(0, jumpRange), ForceMode2D.Impulse);
-
-		canJump = false;
+		if (Input.GetKeyDown(KeyCode.UpArrow))
+		{
+			rigidbody2d.AddForce(new Vector2(0, jumpRange), ForceMode2D.Impulse);
+			canJump = false;
+		}
 	}
 
 	protected override void Attack()
 	{
-		if (!Input.GetKeyDown(KeyCode.A)) return;
+		if (countAttackDelay > 0) return;
 
-		animator.SetTrigger("Attack");
 
-		_audio.clip = attackSound;
-		_audio.time = 0.3f;
-		_audio.Play();
-
-		base.Attack();
-
-		RaycastHit2D boxCast = Physics2D.BoxCast(transform.position, new Vector2(1, 3f), 0, spriteRenderer.flipX ? Vector2.left : Vector2.right, attackRange, LayerMask.GetMask("Enemy"));
-		if (boxCast.transform != null)
+		if (Input.GetKeyDown(KeyCode.A))
 		{
-			combo.Intactly();
-			boxCast.collider.GetComponent<Enemy>().BeAttacked = true;
+			countAttackDelay = attackDelay;
+			
+			animator.SetTrigger("Attack");
+
+			audioSource.clip = attackSound;
+			audioSource.time = 0.3f;
+			audioSource.Play();
+
+			RaycastHit2D boxCast = Physics2D.BoxCast(transform.position, new Vector2(1, 3f), 0, spriteRenderer.flipX ? Vector2.left : Vector2.right, attackRange, LayerMask.GetMask("Enemy"));
+			if (boxCast.transform != null)
+			{
+				combo.Intactly();
+				boxCast.collider.GetComponent<Enemy>().BeShot(damage);
+			}
 		}
 	}
 
-	protected override IEnumerator KnockBack()
+	protected override void DeathSound()
 	{
-		isHit = true;
 
-		animator.SetBool("KnockBack", true);
-
-		_rigidbody2D.AddForce(new Vector2(spriteRenderer.flipX ? knockBackRange : -knockBackRange, 0), ForceMode2D.Impulse);
-
-		yield return new WaitForSeconds(0.2f);
-		animator.SetBool("KnockBack", false);
-
-		if (hp <= 0)
-		{
-			Destroy(gameObject);
-		}
-
-		isHit = false;
 	}
 
 	private void OnDestroy()
@@ -128,19 +103,24 @@ public class Player : Actor
 		SceneManager.LoadScene("End");
 	}
 
-	private void OnCollisionEnter2D(Collision2D collision)
+	private void OnTriggerEnter2D(Collider2D collision)
 	{
-		if (collision.transform.CompareTag("Ground"))
+		if (collision.CompareTag("Ground"))
 		{
 			canJump = true;
 		}
 
-		if (collision.transform.CompareTag("Bullet"))
+		if (collision.CompareTag("Thorn"))
 		{
-			BeAttacked = true;
-			hp -= 30;
+			BeShot(5);
+		}
+
+		if (collision.CompareTag("Bullet"))
+		{
+			BeShot(collision.GetComponent<Bullet>().damage);
 			Destroy(collision.gameObject);
 		}
 	}
+
 }
 
