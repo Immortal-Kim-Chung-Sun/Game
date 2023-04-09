@@ -1229,19 +1229,19 @@ MonoBehaviour:
   enemyDatas:
   - enemy1: 3
     enemy2: 0
-    enemy3: 0
+    boss: 0
   - enemy1: 3
     enemy2: 2
-    enemy3: 0
+    boss: 0
   - enemy1: 4
     enemy2: 3
-    enemy3: 0
+    boss: 0
   - enemy1: 4
     enemy2: 4
-    enemy3: 0
+    boss: 0
   - enemy1: 0
     enemy2: 0
-    enemy3: 1
+    boss: 1
   enemys:
   - {fileID: 9019279702463487310, guid: 76f262e0a5cd3a943bdbb854338c8e5b, type: 3}
   - {fileID: 9019279702463487310, guid: e9d12fc5365b84343a8bc4eab2f28e51, type: 3}
@@ -1786,7 +1786,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   wallCollider: {fileID: 1673735178}
-  enemySpawner: {fileID: 861045888}
+  enemySpawnerTransform: {fileID: 861045888}
   fazeIsEnd:
     m_PersistentCalls:
       m_Calls:
