@@ -28,7 +28,7 @@
   <br>
 </details>
 
-<img width="640" alt="image" src="https://user-images.githubusercontent.com/80941288/230767447-d2b0cc96-f9e9-48d1-9f80-5b5625279a84.png"><br>
+<img width="640" alt="image" src="https://user-images.githubusercontent.com/80941288/230767508-894b1542-da17-4542-94c1-bb2c5101f853.png"><br>
 
 <hr class='hr-solid'/>
 
