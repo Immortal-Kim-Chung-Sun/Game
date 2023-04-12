@@ -31,7 +31,7 @@ public class DataManager : MonoBehaviour
 		string json = JsonUtility.ToJson(userData);
 
 		// URL 주소 설정 후 서버에 Request Post
-		StartCoroutine(Upload("http://10.80.162.73:8080/user/save", json));
+		StartCoroutine(Upload("http://172.20.10.4:8080/user/save", json));
 	}
 
 	/// <summary>
